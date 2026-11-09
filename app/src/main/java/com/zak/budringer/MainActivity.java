@@ -183,8 +183,8 @@ public class MainActivity extends Activity {
                 out.write(msg);
                 out.flush();
                 log("Sent ring 0x" + String.format("%02X", components) + " -> " + hex(msg));
-            } catch (IOException e) {
-                log("Failed: " + e.getMessage());
+            } catch (Exception e) {
+                log("Failed: " + e.getClass().getSimpleName() + ": " + e.getMessage());
                 log("Make sure a bud is connected. Try toggling Bluetooth, or force-stop "
                         + "the Pixel Buds app so the channel is free.");
                 closeSocket();
@@ -198,12 +198,12 @@ public class MainActivity extends Activity {
             return;
         }
         closeSocket();
-        adapter.cancelDiscovery();
         log("Connecting to " + device.getName() + "...");
         try {
             socket = device.createRfcommSocketToServiceRecord(MESSAGE_STREAM_UUID);
             socket.connect();
         } catch (IOException secureFail) {
+            try { socket.close(); } catch (IOException ignored) { }
             log("Secure connect failed (" + secureFail.getMessage() + "), trying insecure...");
             socket = device.createInsecureRfcommSocketToServiceRecord(MESSAGE_STREAM_UUID);
             socket.connect();
@@ -221,7 +221,7 @@ public class MainActivity extends Activity {
                 while ((n = in.read(buf)) > 0) {
                     log("Received: " + hex(buf, n) + describe(buf, n));
                 }
-            } catch (IOException ignored) {
+            } catch (Exception ignored) {
                 // Socket closed.
             }
             log("Connection closed.");
