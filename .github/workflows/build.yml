@@ -28,6 +28,7 @@ jobs:
           echo "sdk.dir=$ANDROID_HOME" > local.properties
           chmod +x gradlew
           set -o pipefail
+          for i in 1 2 3 4 5; do ./gradlew --no-daemon --version && break; echo "Gradle download failed, retrying ($i)"; sleep 20; done
           ./gradlew --no-daemon --stacktrace assembleDebug 2>&1 | tee build.log || {
             grep -E "error:|FAILURE|What went wrong|Exception|timeout|> " build.log | head -40 | while IFS= read -r l; do echo "::error::$l"; done
             exit 1
